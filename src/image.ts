@@ -11,7 +11,11 @@ class Image extends Actor {
             color: color,
             collisionType: CollisionType.Active, 
         });
+        this.body.bounciness = 0.1;
+        this.collider.useCircleCollider(30);
         
         this.tag = tag;
     }
 }
+
+export default Image;

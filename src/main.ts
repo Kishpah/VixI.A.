@@ -1,5 +1,6 @@
 import { Actor, CollisionType, Color, DisplayMode, Engine, Physics, vec } from "excalibur";
 import Resources from "./resources";
+import Image from "./image";
 
 Physics.useRealisticPhysics();
 //Physics.useArcadePhysics();
@@ -72,23 +73,29 @@ game.start().then(() => {
     console.log('Prompt: ', prompt)
 
     let timeDelay = 0;
-    for(const resource of resources) {
+    for (const resource of resources) {
         let color: Color;
-        if(prompt.includes(resource.name)){
-            color = new Color(250,0,0)
-        }        else{
-            color = new Color(0,250,0)
+        if (prompt.includes(resource.name)) {
+            color = new Color(250, 0, 0)
+        } else {
+            color = new Color(0, 250, 0)
         }
         game.clock.schedule(() => {
+            let element: Image = new Image(game.halfDrawWidth + Math.random() * 40 - 20 - 50, -200, 30, color, resource.name);
             // New Circle
-            let element: Actor = circle(color);
-            // Low bounciness
-            element.body.bounciness = 0.1;
-            element.collider.useCircleCollider(30);
+
+
+            // let element: Actor = circle(color);
+            // // Low bounciness
+            // element.body.bounciness = 0.1;
+            // element.collider.useCircleCollider(30);
 
             // If clicked, check if it's valid and move to the right container
             element.on("pointerdown", () => {
-                moveToRightContainer(element);
+                console.log('tag: ', element.tag)
+                if (prompt.includes(element.tag)) {
+                    moveToRightContainer(element);
+                }
             });
 
             game.currentScene.add(element);
@@ -120,7 +127,7 @@ function circle(color: Color) {
         pos: vec(game.halfDrawWidth + Math.random() * 40 - 20 - 50, -200),
         radius: 30,
         color: color, //Color.Yellow,
-        collisionType: CollisionType.Active,        
+        collisionType: CollisionType.Active,
     });
 }
 
