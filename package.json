@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "parcel index.html --no-autoinstall",
+    "build": "parcel build index.html --no-autoinstall",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
