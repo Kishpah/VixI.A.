@@ -1,0 +1,29 @@
+{
+  "name": "vixi.a.",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel index.html --no-autoinstall",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kishpah/VixI.A..git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kishpah/VixI.A./issues"
+  },
+  "homepage": "https://github.com/Kishpah/VixI.A.#readme",
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "excalibur": "^0.27.0",
+    "parcel-bundler": "^1.12.5"
+  }
+}
