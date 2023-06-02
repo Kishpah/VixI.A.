@@ -1,114 +1,131 @@
-import { Engine, Actor, Color, CollisionType, vec } from "excalibur";
+import { Actor, CollisionType, Color, DisplayMode, Engine, Physics, vec } from "excalibur";
+import Resources from "./resources";
+
+Physics.useRealisticPhysics();
+//Physics.useArcadePhysics();
+Physics.acc = vec(0, 300);
+Physics.checkForFastBodies = true
+Physics.positionIterations = 3
+Physics.velocityIterations = 8
 
 const game = new Engine({
     width: 800,
     height: 600,
+    displayMode: DisplayMode.FitScreen
 });
 
-const paddle = new Actor({
-    x: 150,
-    y: game.drawHeight - 40,
+// Caja is an actor made from three boxes, one for the ground and another two, one for each side
+const Caja1 = new Actor({
+    pos: vec(game.halfDrawWidth, game.drawHeight),
+    width: game.drawWidth,
+    height: 100,
+    color: Color.DarkGray,
+    collisionType: CollisionType.Fixed
+});
+
+const Caja2 = new Actor({
+    pos: vec(100, game.halfDrawHeight),
+    width: 20,
+    height: game.drawHeight,
+    color: Color.DarkGray,
+    collisionType: CollisionType.Fixed
+});
+
+const Caja3 = new Actor({
+    pos: vec(game.drawWidth - 200, game.halfDrawHeight),
+    width: 20,
+    height: game.drawHeight,
+    color: Color.DarkGray,
+    collisionType: CollisionType.Fixed
+});
+
+const Caja4 = new Actor({
+    pos: vec(game.drawWidth - 100, game.halfDrawHeight),
     width: 200,
     height: 20,
-    color: Color.Chartreuse
+    color: Color.DarkGray,
+    collisionType: CollisionType.Fixed
 });
 
-paddle.body.collisionType = CollisionType.Fixed;
-
-game.add(paddle);
-
-game.input.pointers.primary.on("move", (evt) => {
-    paddle.pos.x = evt.worldPos.x;
+const Caja5 = new Actor({
+    pos: vec(game.drawWidth, game.halfDrawHeight - game.halfDrawHeight / 2),
+    width: 20,
+    height: game.halfDrawHeight,
+    color: Color.DarkGray,
+    collisionType: CollisionType.Fixed
 });
 
+// start-snippet{collision}
+game.start().then(() => {
+    game.currentScene.add(Caja1);
+    game.currentScene.add(Caja2);
+    game.currentScene.add(Caja3);
+    game.currentScene.add(Caja4);
+    game.currentScene.add(Caja5);
 
-const ball = new Actor({
-    x: 300,
-    y: 200,
-    radius: 10,
-    color: Color.Red
+    game.currentScene.camera.pos = vec(game.halfDrawWidth, game.halfDrawHeight);
+
+    const prompt = ['manzana', 'avión', 'árbol', 'hormiga']
+    const resources = Resources.getResourceList();
+
+    console.log('Resources: ', resources)
+    console.log('Prompt: ', prompt)
+
+    let timeDelay = 0;
+    for(const resource of resources) {
+        let color: Color;
+        if(prompt.includes(resource.name)){
+            color = new Color(250,0,0)
+        }        else{
+            color = new Color(0,250,0)
+        }
+        game.clock.schedule(() => {
+            // New Circle
+            let element: Actor = circle(color);
+            // Low bounciness
+            element.body.bounciness = 0.1;
+            element.collider.useCircleCollider(30);
+
+            // If clicked, check if it's valid and move to the right container
+            element.on("pointerdown", () => {
+                moveToRightContainer(element);
+            });
+
+            game.currentScene.add(element);
+        }, timeDelay++ * 50);
+    }
+
+    // Add 20 circles, one every 1th of a second
+    // for (let i = 0; i < 50; i++) {
+    //     game.clock.schedule(() => {
+    //         // New Circle
+    //         let element: Actor = circle(new Color(Math.random() * 255, Math.random() * 255, Math.random() * 255));
+    //         // Low bounciness
+    //         element.body.bounciness = 0.1;
+    //         element.collider.useCircleCollider(30);
+
+    //         // If clicked, check if it's valid and move to the right container
+    //         element.on("pointerdown", () => {
+    //             moveToRightContainer(element);
+    //         });
+
+    //         game.currentScene.add(element);
+    //     }, i * 50);
+    // }
+
 });
 
-const ballSpeed = vec(100, 100);
-
-setTimeout(() => {
-    ball.vel.x = ballSpeed.x;
-    ball.vel.y = -ballSpeed.y;
-}, 1000);
-
-ball.body.collisionType = CollisionType.Passive
-
-game.add(ball);
-
-ball.on("postupdate", () => {
-    if (ball.pos.x < ball.width / 2) {
-        ball.vel.x = ballSpeed.x;
-    }
-
-    if (ball.pos.x + ball.width / 2 > game.drawWidth) {
-        ball.vel.x = ballSpeed.x * -1;
-    }
-
-    if (ball.pos.y < ball.height / 2) {
-        ball.vel.y = ballSpeed.y;
-    }
-});
-
-const padding = 20;
-const xoffset = 65;
-const yoffset = 20;
-const columns = 5;
-const rows = 3;
-
-const brickColor = [Color.Violet, Color.Orange, Color.Yellow];
-
-const brickWidth = game.drawWidth / columns - padding - padding / columns;
-const brickHeight = 30;
-const bricks: Actor[] = [];
-for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < columns; i++) {
-        bricks.push(new Actor({
-            x: xoffset + i * (brickWidth + padding) + padding,
-            y: yoffset + j * (brickHeight + padding) + padding,
-            width: brickWidth,
-            height: brickHeight,
-            color: brickColor[j % brickColor.length]
-        }));
-    }
+function circle(color: Color) {
+    return new Actor({
+        pos: vec(game.halfDrawWidth + Math.random() * 40 - 20 - 50, -200),
+        radius: 30,
+        color: color, //Color.Yellow,
+        collisionType: CollisionType.Active,        
+    });
 }
 
-bricks.forEach((brick) => {
-    brick.body.collisionType = CollisionType.Active;
-    game.add(brick);
-});
-
-let colliding = false;
-
-ball.on("collisionstart", (evt) => {
-    if (bricks.indexOf(evt.other) > -1) {
-        evt.other.kill();
-    }
-
-    let intersection = evt.contact.mtv.normalize();
-
-    if (!colliding) {
-        colliding = true;
-        if (Math.abs(intersection.x) > Math.abs(intersection.y)) {
-            ball.vel.x *= -1;
-        } else {
-            ball.vel.y *= -1;
-        }
-    }
-});
-
-ball.on("collisionend", () => {
-    colliding = false;
-});
-
-ball.on("exitviewport", () => {
-    alert("You lose!");
-});
-
-
-game.start();
-
+function moveToRightContainer(element: Actor) {
+    element.pos = vec(game.drawWidth - 100 + Math.random() * 40 - 20, -100)
+    element.vel = vec(0, 0); // Stop movement
+    element.acc = vec(0, 0);
+}
